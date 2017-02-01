@@ -2,12 +2,12 @@
 
 /**
  * Plugin Name: Image Sizes on Demand
- * Description: Creates the new size of an image, if it is requested and does not already exist
+ * Description: Creates the new size of an image, if it is requested and does not already exist.
  * Version:     1.0
  * Author: PALASTHOTEL by Julia Krischik <jk@palasthotel.de>
  * Author URI: http://palasthotel.de/
  */
-class ImageOnDemand {
+class ImageSizesOnDemand {
 
 	public function __construct() {
 		add_action('template_redirect', array($this, 'lost_request_handler'));
@@ -77,4 +77,4 @@ class ImageOnDemand {
 	}
 }
 
-new ImageOnDemand();
+new ImageSizesOnDemand();
