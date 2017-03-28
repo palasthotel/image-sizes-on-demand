@@ -53,7 +53,7 @@ class ImageSizesOnDemand {
 
 		@set_time_limit( 60 ); // time limit one minute
 
-		include( ABSPATH . 'wp-admin/includes/image.php' );
+		include_once( ABSPATH . 'wp-admin/includes/image.php' );
 
 		$metadata = wp_generate_attachment_metadata( $image_id, $fullsizepath );
 
