@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Image Sizes on Demand
  * Description: Creates the new size of an image, if it is requested and does not already exist.
- * Version:     1.0
+ * Version:     1.1
  * Author: PALASTHOTEL by Julia Krischik <jk@palasthotel.de>
  * Author URI: http://palasthotel.de/
  */
