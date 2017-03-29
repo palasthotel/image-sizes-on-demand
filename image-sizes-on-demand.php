@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Image Sizes on Demand
  * Description: Creates the new size of an image, if it is requested and does not already exist.
- * Version:     1.1
+ * Version:     1.2
  * Author: PALASTHOTEL by Julia Krischik <jk@palasthotel.de>
  * Author URI: http://palasthotel.de/
  */
@@ -21,7 +21,7 @@ class ImageSizesOnDemand {
 		if ( !is_404() ) return;
 
 		//check if this request is for an image
-		if (preg_match('/wp-content(\/[^\/]+(\/[0-9]{4}\/[0-9]{2})?\/){1}(.*)-([0-9]+)x([0-9]+)?\.(jpg|png|gif)/i',$_SERVER['REQUEST_URI'],$matches)) {
+		if (preg_match('/wp-content(\/[^\/]+(\/[0-9]{4}\/[0-9]{2})?\/){1}(.*)-([0-9]+)x([0-9]+)?\.(jpg|jpeg|png|gif)/i',$_SERVER['REQUEST_URI'],$matches)) {
 			$folder = $matches[2];
 			$filename = $matches[3];
 			$width = $matches[4];
