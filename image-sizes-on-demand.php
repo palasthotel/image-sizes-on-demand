@@ -10,37 +10,72 @@
 class ImageSizesOnDemand {
 
 	private $additional_sizes;
-	private $accepted_mime_types = array('image/jpg', 'image/jpeg', 'image/png', 'image/gif');
+	private $accepted_mime_types = array( 'image/jpg', 'image/jpeg', 'image/png', 'image/gif' );
+	private $disable_generating_custom_image_sizes_key = 'disable_generating_custom_image_size';
+	private $namespace = 'image-sizes-on-demand';
 
 	public function __construct() {
 		add_action( 'template_redirect', array( $this, 'lost_request_handler' ) );
 
-		add_filter( 'wp_generate_attachment_metadata', array( $this, 'save_attachment_metadata_sizes' ), 10, 2 );
-		add_filter( 'wp_handle_upload_prefilter', array( $this, 'save_and_clear_additional_sizes' ), 10, 2 );
-		add_filter( 'attachment_thumbnail_args', array( $this, 'restore_additional_sizes' ), 10, 2 );
+		//settings page
+		add_action( 'admin_menu', array( $this, 'menu_pages' ) );
+
+		//prevent generation of custom image sizes on upload if setting is active
+		$disable_generating_custom_image_sizes = get_option( $this->disable_generating_custom_image_sizes_key, false );
+		if ( $disable_generating_custom_image_sizes
+		     && isset( $_REQUEST['action'] )
+		     && $_REQUEST['action'] === "upload-attachment"
+		) {
+			add_filter( 'wp_generate_attachment_metadata', array( $this, 'save_attachment_metadata_sizes' ), 10, 2 );
+			add_filter( 'wp_handle_upload_prefilter', array( $this, 'save_and_clear_additional_sizes' ) );
+			add_filter( 'attachment_thumbnail_args', array( $this, 'restore_additional_sizes' ) );
+		}
+	}
+
+	public function menu_pages() {
+		add_submenu_page( 'options-general.php', 'Image Sizes On Demand', 'Image Sizes On Demand', 'manage_options', $this->namespace, array(
+			$this,
+			"render_settings"
+		) );
+	}
+
+	/**
+	 *  renders settings page
+	 */
+	public function render_settings() {
+		if ( isset( $_POST['submit'] ) ) {
+			if ( isset( $_POST[ $this->disable_generating_custom_image_sizes_key ] ) ) {
+				update_option( $this->disable_generating_custom_image_sizes_key, true );
+			} else {
+				delete_option( $this->disable_generating_custom_image_sizes_key );
+			}
+		}
+		$disable_generating_custom_image_sizes = get_option( $this->disable_generating_custom_image_sizes_key, false );
+
+		require plugin_dir_path( __FILE__ ) . '/settings.php';
 	}
 
 
-	function save_and_clear_additional_sizes( $upload, $context ) {
+	function save_and_clear_additional_sizes( $upload ) {
 		//only do this stuff on upload
 		if ( ! isset( $_REQUEST['action'] )
 		     || $_REQUEST['action'] !== "upload-attachment"
-		     || !in_array($upload['type'], $this->accepted_mime_types)
+		     || ! in_array( $upload['type'], $this->accepted_mime_types )
 		) {
 			return $upload;
 		}
 
 		global $_wp_additional_image_sizes;
 
-		$this->additional_sizes = $_wp_additional_image_sizes;
+		$this->additional_sizes     = $_wp_additional_image_sizes;
 		$_wp_additional_image_sizes = array();
 
 		return $upload;
 	}
 
-	function restore_additional_sizes( $meta, $file ) {
+	function restore_additional_sizes( $meta ) {
 		//only do this if we have previously saved something
-		if(empty($this->additional_sizes)){
+		if ( empty( $this->additional_sizes ) ) {
 			return;
 		}
 
@@ -62,7 +97,7 @@ class ImageSizesOnDemand {
 		$mime_type = mime_content_type( $file );
 
 		//only do this for images
-		if ( !in_array($mime_type, $this->accepted_mime_types)) {
+		if ( ! in_array( $mime_type, $this->accepted_mime_types ) ) {
 			return $metadata;
 		}
 
@@ -81,11 +116,11 @@ class ImageSizesOnDemand {
 				$dims = image_resize_dimensions( $metadata['width'], $metadata['height'], $size_data['width'], $size_data['height'], $size_data['crop'] );
 
 				//only add size if image is big enough
-				if($dims) {
+				if ( $dims ) {
 					$new_width  = $dims[4];
 					$new_height = $dims[5];
 
-					$filename = basename($editor->generate_filename( "{$new_width}x{$new_height}", null, $extension ));
+					$filename = basename( $editor->generate_filename( "{$new_width}x{$new_height}", null, $extension ) );
 
 					$metadata['sizes'][ $size ] = array(
 						"file"      => $filename,
