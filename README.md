@@ -4,7 +4,7 @@ Donate link: http://palasthotel.de/
 Tags: images, media, thumbnails
 Requires at least: 4.0 
 Tested up to: 4.7.2 
-Stable tag: 1.2
+Stable tag: 1.3
 License: GPLv3 License URI: http://www.gnu.org/licenses/gpl
 
 Creates the new size of an image, if it is requested and does not already exist.
@@ -26,6 +26,9 @@ No frequently asked questions yet.
 Sorry, I can't show you anything, the plugin works only behind the scenes.
 
 == Changelog ==
+
+= 1.3 =
+Added option to only generate default image sizes on upload and generate others on demand.
 
 = 1.2 =
 Add jpeg to filetypes.
