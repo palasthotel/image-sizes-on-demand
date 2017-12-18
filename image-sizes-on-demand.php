@@ -21,15 +21,21 @@ class ImageSizesOnDemand {
 		add_action( 'admin_menu', array( $this, 'menu_pages' ) );
 
 		//prevent generation of custom image sizes on upload if setting is active
-		$disable_generating_custom_image_sizes = get_option( $this->disable_generating_custom_image_sizes_key, false );
+		$disable_generating_custom_image_sizes = boolval(get_option( $this->disable_generating_custom_image_sizes_key, false ));
 		if ( $disable_generating_custom_image_sizes
-		     && isset( $_REQUEST['action'] )
-		     && $_REQUEST['action'] === "upload-attachment"
+		     && $this->isUpload()
 		) {
 			add_filter( 'wp_generate_attachment_metadata', array( $this, 'save_attachment_metadata_sizes' ), 10, 2 );
 			add_filter( 'wp_handle_upload_prefilter', array( $this, 'save_and_clear_additional_sizes' ) );
 			add_filter( 'attachment_thumbnail_args', array( $this, 'restore_additional_sizes' ) );
 		}
+	}
+
+	public function isUpload(){
+		return (
+			( isset($_FILES) && isset( $_FILES["async-upload"]) )
+		// TODO: browser upload check
+		);
 	}
 
 	public function menu_pages() {
@@ -58,8 +64,7 @@ class ImageSizesOnDemand {
 
 	function save_and_clear_additional_sizes( $upload ) {
 		//only do this stuff on upload
-		if ( ! isset( $_REQUEST['action'] )
-		     || $_REQUEST['action'] !== "upload-attachment"
+		if ( ! $this->isUpload()
 		     || ! in_array( $upload['type'], $this->accepted_mime_types )
 		) {
 			return $upload;
@@ -76,7 +81,7 @@ class ImageSizesOnDemand {
 	function restore_additional_sizes( $meta ) {
 		//only do this if we have previously saved something
 		if ( empty( $this->additional_sizes ) ) {
-			return;
+			return $meta;
 		}
 
 		global $_wp_additional_image_sizes;
@@ -88,7 +93,7 @@ class ImageSizesOnDemand {
 
 	function save_attachment_metadata_sizes( $metadata, $attachment_id ) {
 		//only do this stuff on upload
-		if ( ! isset( $_REQUEST['action'] ) || $_REQUEST['action'] !== "upload-attachment" ) {
+		if ( ! $this->isUpload() ) {
 			return $metadata;
 		}
 
